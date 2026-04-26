@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMT - Simulador</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: sans-serif;
+            color: white;
+        }
+
+        #container-simulador {
+            position: relative;
+            width: 100%;
+            max-width: 500px; /* Ajusta o tamanho visual no PC */
+            margin-top: 20px;
+        }
+
+        .camada {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        .fio-frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: none; /* Escondidos por padrão */
+        }
+
+        .controles {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 20px;
+        }
+
+        button {
+            padding: 15px;
+            background: #333;
+            color: #ffcc00;
+            border: 2px solid #ffcc00;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:active {
+            background: #ffcc00;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Simulador SMT</h2>
+
+    <div id="container-simulador">
+        <img src="circuito.jpg" class="camada" alt="Fundo do Quadro">
+
+        <img id="fio-vm1-f1" src="FIO VM1/quadro0000.png" class="fio-frame">
+        <img id="fio-vm1-f2" src="FIO VM1/quadro0006.png" class="fio-frame">
+        <img id="fio-vm1-f3" src="FIO VM1/quadro0012.png" class="fio-frame">
+    </div>
+
+    <div class="controles">
+        <button onclick="animar('fio-vm1', 3)">LIGAR FIO VM1</button>
+        <button onclick="reset()">RESETAR</button>
+    </div>
+
+    <script>
+        function animar(prefixo, totalFrames) {
+            let frameAtual = 1;
+            
+            let intervalo = setInterval(() => {
+                if (frameAtual <= totalFrames) {
+                    document.getElementById(prefixo + '-f' + frameAtual).style.display = 'block';
+                    frameAtual++;
+                } else {
+                    clearInterval(intervalo);
+                }
+            }, 100); // Velocidade da animação (100ms)
+        }
+
+        function reset() {
+            const frames = document.querySelectorAll('.fio-frame');
+            frames.forEach(f => f.style.display = 'none');
+        }
+    </script>
+</body>
+</html>

@@ -5,95 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SMT - Simulador</title>
     <style>
-        body {
-            margin: 0;
-            background-color: #1a1a1a;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-family: sans-serif;
-            color: white;
-        }
-
-        #container-simulador {
-            position: relative;
-            width: 100%;
-            max-width: 500px; /* Ajusta o tamanho visual no PC */
-            margin-top: 20px;
-        }
-
-        .camada {
-            display: block;
-            width: 100%;
-            height: auto;
-        }
-
-        .fio-frame {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            display: none; /* Escondidos por padrão */
-        }
-
-        .controles {
-            margin-top: 20px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            padding: 20px;
-        }
-
-        button {
-            padding: 15px;
-            background: #333;
-            color: #ffcc00;
-            border: 2px solid #ffcc00;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        button:active {
-            background: #ffcc00;
-            color: #000;
-        }
+        body { margin: 0; background-color: #0b0e14; display: flex; flex-direction: column; align-items: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #e0e0e0; }
+        #container-simulador { position: relative; width: 100%; max-width: 400px; margin-top: 15px; border: 2px solid #2c3e50; box-shadow: 0 0 20px rgba(0,0,0,0.5); border-radius: 8px; overflow: hidden; }
+        .camada { display: block; width: 100%; height: auto; }
+        .fio-frame { position: absolute; top: 0; left: 0; width: 100%; height: auto; pointer-events: none; }
+        .controles { margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; width: 100%; max-width: 400px; }
+        button { padding: 12px; background: #1c1c1c; color: #ffcc00; border: 1px solid #ffcc00; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 11px; transition: 0.2s; }
+        button:active { background: #ffcc00; color: #000; transform: scale(0.95); }
+        .btn-reset { grid-column: span 2; background: #c0392b; color: white; border-color: #e74c3c; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <h2>Simulador SMT</h2>
+    <h2 style="color: #ffcc00; text-shadow: 2px 2px 4px #000;">Simulador SMT</h2>
 
     <div id="container-simulador">
-        <img src="circuito.jpg" class="camada" alt="Fundo do Quadro">
-
-        <img id="fio-vm1-f1" src="FIO VM1/quadro0000.png" class="fio-frame">
-        <img id="fio-vm1-f2" src="FIO VM1/quadro0006.png" class="fio-frame">
-        <img id="fio-vm1-f3" src="FIO VM1/quadro0012.png" class="fio-frame">
+        <img src="circuito.jpg" class="camada" alt="Quadro Elétrico">
+        <div id="camadas-fios"></div>
     </div>
 
     <div class="controles">
-        <button onclick="animar('fio-vm1', 3)">LIGAR FIO VM1</button>
-        <button onclick="reset()">RESETAR</button>
+        <button onclick="animar('FASE', 12, 6)">Ligar Fase 1</button>
+        <button onclick="animar('FASE2', 12, 6)">Ligar Fase 2</button>
+        <button onclick="animar('FIO PT1', 12, 6)">Ligar Preto 1</button>
+        <button onclick="animar('FIO PT2', 12, 6)">Ligar Preto 2</button>
+        <button onclick="animar('FIO VM1', 12, 6)">Ligar Vermelho 1</button>
+        <button onclick="animar('FIO VM2', 12, 6)">Ligar Vermelho 2</button>
+        <button class="btn-reset" onclick="location.reload()">Limpar Painel</button>
     </div>
 
     <script>
-        function animar(prefixo, totalFrames) {
-            let frameAtual = 1;
-            
-            let intervalo = setInterval(() => {
-                if (frameAtual <= totalFrames) {
-                    document.getElementById(prefixo + '-f' + frameAtual).style.display = 'block';
-                    frameAtual++;
+        function animar(pasta, ultimoFrame, salto) {
+            const container = document.getElementById('camadas-fios');
+            let frameAtual = 0;
+
+            const intervalo = setInterval(() => {
+                if (frameAtual <= ultimoFrame) {
+                    // Formata para quadro0000, quadro0006, etc.
+                    let numFormatado = frameAtual.toString().padStart(4, '0');
+                    let imgPath = pasta + '/quadro' + numFormatado + '.png';
+
+                    const novaImg = document.createElement('img');
+                    novaImg.src = imgPath;
+                    novaImg.className = 'fio-frame';
+                    novaImg.style.display = 'block';
+                    
+                    // Garante que o frame novo fique por cima
+                    container.appendChild(novaImg);
+
+                    frameAtual += salto;
                 } else {
                     clearInterval(intervalo);
                 }
-            }, 100); // Velocidade da animação (100ms)
-        }
-
-        function reset() {
-            const frames = document.querySelectorAll('.fio-frame');
-            frames.forEach(f => f.style.display = 'none');
+            }, 120); // Velocidade da animação
         }
     </script>
 </body>

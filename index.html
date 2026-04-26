@@ -13,13 +13,12 @@
         
         button { padding: 15px; cursor: pointer; font-weight: bold; background: #1c1c1c; color: #ffcc00; border: 1px solid #ffcc00; border-radius: 6px; text-transform: uppercase; font-size: 10px; transition: 0.3s; }
         
-        /* Estilo para botão bloqueado */
-        button:disabled { border-color: #444; color: #444; cursor: not-allowed; }
+        button:disabled { border-color: #444; color: #444; cursor: not-allowed; opacity: 0.4; }
         
         button:active:not(:disabled) { background: #ffcc00; color: #000; transform: scale(0.95); }
         .reset { grid-column: span 2; background: #c0392b; color: #fff; border: 1px solid #e74c3c; margin-top: 5px; }
         
-        #mensagem { color: #ff4444; font-weight: bold; height: 20px; margin-top: 10px; font-size: 14px; }
+        #mensagem { color: #ff4444; font-weight: bold; height: 25px; margin-top: 10px; font-size: 14px; text-align: center; }
     </style>
 </head>
 <body>
@@ -35,37 +34,35 @@
     <div class="painel">
         <button id="btn-FASE" onclick="verificar('FASE', 18, 0)">1º: Fase 1</button>
         <button id="btn-FASE2" onclick="verificar('FASE2', 18, 1)">2º: Fase 2</button>
-        <button id="btn-FIO PT1" onclick="verificar('FIO PT1', 12, 2)">3º: Preto 1</button>
-        <button id="btn-FIO PT2" onclick="verificar('FIO PT2', 60, 3)">4º: Preto 2</button>
-        <button id="btn-FIO VM1" onclick="verificar('FIO VM1', 12, 4)">5º: Vermelho 1</button>
-        <button id="btn-FIO VM2" onclick="verificar('FIO VM2', 60, 5)">6º: Vermelho 2</button>
+        
+        <button id="btn-FIO VM1" onclick="verificar('FIO VM1', 12, 2)">3º: Vermelho 1</button>
+        <button id="btn-FIO VM2" onclick="verificar('FIO VM2', 60, 3)">4º: Vermelho 2</button>
+        
+        <button id="btn-FIO PT1" onclick="verificar('FIO PT1', 12, 4)">5º: Preto 1</button>
+        <button id="btn-FIO PT2" onclick="verificar('FIO PT2', 60, 5)">6º: Preto 2</button>
         
         <button class="reset" onclick="location.reload()">REINICIAR SEQUÊNCIA</button>
     </div>
 
     <script>
-        // Esta variável guarda em qual passo o usuário está
         let passoAtual = 0;
-
-        // Lista da sequência correta (nomes das pastas)
-        const sequenciaCorreta = ['FASE', 'FASE2', 'FIO PT1', 'FIO PT2', 'FIO VM1', 'FIO VM2'];
 
         function verificar(pasta, fim, indexBotao) {
             const msgDiv = document.getElementById('mensagem');
             
-            // Se o botão clicado for o esperado na sequência
             if (indexBotao === passoAtual) {
-                msgDiv.innerText = ""; // Limpa aviso de erro
+                msgDiv.style.color = "#00ff00";
+                msgDiv.innerText = "Correto! Instalando...";
+                
                 play(pasta, fim);
                 
-                // Desabilita o botão que já foi usado e marca como concluído
-                document.getElementById('btn-' + pasta).style.opacity = "0.5";
                 document.getElementById('btn-' + pasta).disabled = true;
+                passoAtual++; 
                 
-                passoAtual++; // Avança para o próximo passo
+                setTimeout(() => { if(msgDiv.style.color !== "rgb(255, 68, 68)") msgDiv.innerText = ""; }, 2000);
             } else {
-                // Se errar a ordem, dá o aviso
-                msgDiv.innerText = "ERRO: Siga a sequência correta de montagem!";
+                msgDiv.style.color = "#ff4444";
+                msgDiv.innerText = "ERRO: Instale os fios Vermelhos antes dos Pretos!";
                 setTimeout(() => { msgDiv.innerText = ""; }, 3000);
             }
         }

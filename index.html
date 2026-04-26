@@ -3,77 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMT - Interativo</title>
+    <title>SMT - Simulador Pro</title>
     <style>
         body { margin: 0; background-color: #0b0e14; color: white; display: flex; flex-direction: column; align-items: center; font-family: sans-serif; overflow-x: hidden; }
         
         #container-geral { position: relative; width: 100%; max-width: 450px; margin-top: 10px; }
 
-        #quadro { position: relative; width: 100%; border: 2px solid #2c3e50; border-radius: 8px; overflow: hidden; background: #000; }
+        #quadro { position: relative; width: 100%; border: 2px solid #2c3e50; border-radius: 8px; overflow: hidden; background: #000; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
         .fundo { width: 100%; display: block; }
         .fio { position: absolute; top: 0; left: 0; width: 100%; height: auto; display: none; pointer-events: none; }
 
-        /* ZONAS CLICÁVEIS (INVISÍVEIS) */
+        /* ZONAS CLICÁVEIS */
         .zona {
             position: absolute;
             z-index: 100;
             cursor: pointer;
-            border: 2px dashed rgba(255, 204, 0, 0.5); /* REMOVA ESTA LINHA DEPOIS DE AJUSTAR */
-            background: rgba(255, 204, 0, 0.1);    /* REMOVA ESTA LINHA DEPOIS DE AJUSTAR */
+            /* Deixei as bordas bem clarinhas para você ainda enxergar, mas pode apagar as duas linhas abaixo se quiser 100% invisível */
+            border: 1px dashed rgba(255, 204, 0, 0.3); 
+            background: rgba(255, 204, 0, 0.05);
             display: flex;
             align-items: center;
             justify-content: center;
+            color: rgba(255, 204, 0, 0.5);
             font-size: 10px;
-            font-weight: bold;
-            color: #ffcc00;
         }
 
-        .zona:hover { background: rgba(255, 204, 0, 0.3); }
-
-        #mensagem { color: #ff4444; font-weight: bold; height: 30px; margin-top: 10px; text-align: center; width: 90%; }
-        .btn-reset { margin-top: 20px; padding: 12px 30px; background: #c0392b; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        #mensagem { color: #ffcc00; font-weight: bold; height: 35px; margin-top: 15px; text-align: center; width: 90%; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .btn-reset { margin-top: 20px; padding: 12px 30px; background: #c0392b; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.3s; }
+        .btn-reset:hover { background: #e74c3c; }
     </style>
 </head>
 <body>
 
-    <h2 style="color: #ffcc00; margin-bottom: 0;">Simulador SMT</h2>
-    <div id="mensagem">Clique no componente correto para instalar</div>
+    <h2 style="color: #ffcc00; margin-bottom: 0; text-shadow: 0 0 10px rgba(255,204,0,0.4);">Simulador SMT</h2>
+    <div id="mensagem">Aguardando início da montagem...</div>
 
     <div id="container-geral">
         <div id="quadro">
             <img src="circuito.jpg" class="fundo">
             
-            <div class="zona" style="top: 1%; left: 1%; width: 25px; height: 25px;" onclick="verificar('FASE', 18, 0)">1</div>
-            <div class="zona" style="top: 6%; left: 1%; width: 25px; height: 25px;" onclick="verificar('FASE2', 18, 1)">2</div>
-            <div class="zona" style="top: 19%; left: 10%; width: 25px; height: 25px;" onclick="verificar('FIO VM1', 12, 2)">3</div>
-            <div class="zona" style="top: 48%; left: 10%; width: 25px; height: 25px;" onclick="verificar('FIO VM2', 60, 3)">4</div>
-            <div class="zona" style="top: 19%; left: 23%; width: 25px; height: 25px;" onclick="verificar('FIO PT1', 12, 4)">5</div>
-            <div class="zona" style="top: 48%; left: 23%; width: 25px; height: 25px;" onclick="verificar('FIO PT2', 60, 5)">6</div>
+            <div class="zona" style="top: 10%; left: 10%; width: 65px; height: 85px;" onclick="verificar('FASE', 18, 0)">1</div>
+            <div class="zona" style="top: 10%; left: 32%; width: 65px; height: 85px;" onclick="verificar('FASE2', 18, 1)">2</div>
+            
+            <div class="zona" style="top: 42%; left: 15%; width: 55px; height: 55px;" onclick="verificar('FIO VM1', 12, 2)">3</div>
+            <div class="zona" style="top: 42%; left: 48%; width: 55px; height: 55px;" onclick="verificar('FIO VM2', 60, 3)">4</div>
+            
+            <div class="zona" style="top: 72%; left: 15%; width: 55px; height: 55px;" onclick="verificar('FIO PT1', 12, 4)">5</div>
+            <div class="zona" style="top: 72%; left: 48%; width: 55px; height: 55px;" onclick="verificar('FIO PT2', 60, 5)">6</div>
 
             <div id="camadas"></div>
         </div>
     </div>
 
-    <button class="btn-reset" onclick="location.reload()">REINICIAR TUDO</button>
+    <button class="btn-reset" onclick="location.reload()">REINICIAR SIMULADOR</button>
+
+    <audio id="somClick" src="https://www.soundjay.com/buttons/sounds/button-16.mp3" preload="auto"></audio>
+    <audio id="somErro" src="https://www.soundjay.com/buttons/sounds/button-10.mp3" preload="auto"></audio>
 
     <script>
         let passoAtual = 0;
+        const somClick = document.getElementById('somClick');
+        const somErro = document.getElementById('somErro');
 
         function verificar(pasta, fim, index) {
             const msg = document.getElementById('mensagem');
             
             if (index === passoAtual) {
+                // Toca o som de acerto
+                somClick.currentTime = 0;
+                somClick.play();
+
                 msg.style.color = "#00ff00";
-                msg.innerText = "Instalando " + pasta + "...";
+                msg.innerHTML = "✓ " + pasta + " INSTALADO";
                 
                 play(pasta, fim);
                 
-                // Esconde a zona clicada para não clicar de novo
-                event.target.style.display = 'none';
+                // Esconde a zona para evitar cliques repetidos
+                event.currentTarget.style.visibility = 'hidden';
                 passoAtual++;
+
+                if(passoAtual === 6) {
+                    setTimeout(() => {
+                        msg.style.color = "#00ffff";
+                        msg.innerHTML = "⚡ MONTAGEM CONCLUÍDA COM SUCESSO! ⚡";
+                    }, 2000);
+                }
             } else {
+                // Toca som de erro e avisa
+                somErro.currentTime = 0;
+                somErro.play();
                 msg.style.color = "#ff4444";
-                msg.innerText = "ERRO: Siga a ordem correta (1 a 6)!";
+                msg.innerText = "⚠ ERRO: SIGA A SEQUÊNCIA (PASSO " + (passoAtual + 1) + ")";
             }
         }
 
@@ -95,11 +116,12 @@
 
                 let num = frameAtual.toString().padStart(4, '0');
                 let img = document.createElement('img');
-                img.src = pasta + '/quadro' + num + '.png';
+                // Adicionado carimbo de tempo (?v=) para matar o cache das cores novas
+                img.src = pasta + '/quadro' + num + '.png?v=' + Date.now();
                 img.className = 'fio';
                 img.style.display = 'block';
                 container.appendChild(img);
-            }, 120);
+            }, 100);
         }
     </script>
 </body>

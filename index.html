@@ -3,67 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMT - Sequencial</title>
+    <title>SMT - Interativo</title>
     <style>
-        body { margin: 0; background-color: #0b0e14; color: white; display: flex; flex-direction: column; align-items: center; font-family: sans-serif; }
-        #quadro { position: relative; width: 100%; max-width: 450px; margin-top: 10px; border: 2px solid #2c3e50; border-radius: 8px; overflow: hidden; background: #000; }
+        body { margin: 0; background-color: #0b0e14; color: white; display: flex; flex-direction: column; align-items: center; font-family: sans-serif; overflow-x: hidden; }
+        
+        #container-geral { position: relative; width: 100%; max-width: 450px; margin-top: 10px; }
+
+        #quadro { position: relative; width: 100%; border: 2px solid #2c3e50; border-radius: 8px; overflow: hidden; background: #000; }
         .fundo { width: 100%; display: block; }
         .fio { position: absolute; top: 0; left: 0; width: 100%; height: auto; display: none; pointer-events: none; }
-        .painel { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 20px; width: 100%; max-width: 450px; }
-        
-        button { padding: 15px; cursor: pointer; font-weight: bold; background: #1c1c1c; color: #ffcc00; border: 1px solid #ffcc00; border-radius: 6px; text-transform: uppercase; font-size: 10px; transition: 0.3s; }
-        
-        button:disabled { border-color: #444; color: #444; cursor: not-allowed; opacity: 0.4; }
-        
-        button:active:not(:disabled) { background: #ffcc00; color: #000; transform: scale(0.95); }
-        .reset { grid-column: span 2; background: #c0392b; color: #fff; border: 1px solid #e74c3c; margin-top: 5px; }
-        
-        #mensagem { color: #ff4444; font-weight: bold; height: 25px; margin-top: 10px; font-size: 14px; text-align: center; }
+
+        /* ZONAS CLICÁVEIS (INVISÍVEIS) */
+        .zona {
+            position: absolute;
+            z-index: 100;
+            cursor: pointer;
+            border: 2px dashed rgba(255, 204, 0, 0.5); /* REMOVA ESTA LINHA DEPOIS DE AJUSTAR */
+            background: rgba(255, 204, 0, 0.1);    /* REMOVA ESTA LINHA DEPOIS DE AJUSTAR */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: #ffcc00;
+        }
+
+        .zona:hover { background: rgba(255, 204, 0, 0.3); }
+
+        #mensagem { color: #ff4444; font-weight: bold; height: 30px; margin-top: 10px; text-align: center; width: 90%; }
+        .btn-reset { margin-top: 20px; padding: 12px 30px; background: #c0392b; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h2 style="color: #ffcc00; margin-bottom: 5px;">Simulador SMT</h2>
-    <div id="mensagem"></div>
+    <h2 style="color: #ffcc00; margin-bottom: 0;">Simulador SMT</h2>
+    <div id="mensagem">Clique no componente correto para instalar</div>
 
-    <div id="quadro">
-        <img src="circuito.jpg" class="fundo">
-        <div id="camadas"></div>
+    <div id="container-geral">
+        <div id="quadro">
+            <img src="circuito.jpg" class="fundo">
+            
+            <div class="zona" style="top: 10%; left: 10%; width: 60px; height: 80px;" onclick="verificar('FASE', 18, 0)">1</div>
+            <div class="zona" style="top: 10%; left: 30%; width: 60px; height: 80px;" onclick="verificar('FASE2', 18, 1)">2</div>
+            <div class="zona" style="top: 40%; left: 15%; width: 50px; height: 50px;" onclick="verificar('FIO VM1', 12, 2)">3</div>
+            <div class="zona" style="top: 40%; left: 45%; width: 50px; height: 50px;" onclick="verificar('FIO VM2', 60, 3)">4</div>
+            <div class="zona" style="top: 70%; left: 15%; width: 50px; height: 50px;" onclick="verificar('FIO PT1', 12, 4)">5</div>
+            <div class="zona" style="top: 70%; left: 45%; width: 50px; height: 50px;" onclick="verificar('FIO PT2', 60, 5)">6</div>
+
+            <div id="camadas"></div>
+        </div>
     </div>
 
-    <div class="painel">
-        <button id="btn-FASE" onclick="verificar('FASE', 18, 0)">1º: Fase 1</button>
-        <button id="btn-FASE2" onclick="verificar('FASE2', 18, 1)">2º: Fase 2</button>
-        
-        <button id="btn-FIO VM1" onclick="verificar('FIO VM1', 12, 2)">3º: Vermelho 1</button>
-        <button id="btn-FIO VM2" onclick="verificar('FIO VM2', 60, 3)">4º: Vermelho 2</button>
-        
-        <button id="btn-FIO PT1" onclick="verificar('FIO PT1', 12, 4)">5º: Preto 1</button>
-        <button id="btn-FIO PT2" onclick="verificar('FIO PT2', 60, 5)">6º: Preto 2</button>
-        
-        <button class="reset" onclick="location.reload()">REINICIAR SEQUÊNCIA</button>
-    </div>
+    <button class="btn-reset" onclick="location.reload()">REINICIAR TUDO</button>
 
     <script>
         let passoAtual = 0;
 
-        function verificar(pasta, fim, indexBotao) {
-            const msgDiv = document.getElementById('mensagem');
+        function verificar(pasta, fim, index) {
+            const msg = document.getElementById('mensagem');
             
-            if (indexBotao === passoAtual) {
-                msgDiv.style.color = "#00ff00";
-                msgDiv.innerText = "Correto! Instalando...";
+            if (index === passoAtual) {
+                msg.style.color = "#00ff00";
+                msg.innerText = "Instalando " + pasta + "...";
                 
                 play(pasta, fim);
                 
-                document.getElementById('btn-' + pasta).disabled = true;
-                passoAtual++; 
-                
-                setTimeout(() => { if(msgDiv.style.color !== "rgb(255, 68, 68)") msgDiv.innerText = ""; }, 2000);
+                // Esconde a zona clicada para não clicar de novo
+                event.target.style.display = 'none';
+                passoAtual++;
             } else {
-                msgDiv.style.color = "#ff4444";
-                msgDiv.innerText = "ERRO: Instale os fios Vermelhos antes dos Pretos!";
-                setTimeout(() => { msgDiv.innerText = ""; }, 3000);
+                msg.style.color = "#ff4444";
+                msg.innerText = "ERRO: Siga a ordem correta (1 a 6)!";
             }
         }
 
@@ -74,27 +84,21 @@
 
             let loop = setInterval(() => {
                 let frameAtual;
-
                 if (pasta === 'FASE') {
-                    if (i < framesFase.length) {
-                        frameAtual = framesFase[i];
-                        i++;
-                    } else { clearInterval(loop); return; }
+                    if (i < framesFase.length) { frameAtual = framesFase[i]; i++; } 
+                    else { clearInterval(loop); return; }
                 } else {
                     frameAtual = i * 6;
-                    if (frameAtual <= fim) { i++; } else { clearInterval(loop); return; }
+                    if (frameAtual <= fim) { i++; } 
+                    else { clearInterval(loop); return; }
                 }
 
-                let id = 'img-' + pasta + '-' + frameAtual;
-                if (!document.getElementById(id)) {
-                    let img = document.createElement('img');
-                    img.id = id;
-                    let num = frameAtual.toString().padStart(4, '0');
-                    img.src = pasta + '/quadro' + num + '.png';
-                    img.className = 'fio';
-                    img.style.display = 'block';
-                    container.appendChild(img);
-                }
+                let num = frameAtual.toString().padStart(4, '0');
+                let img = document.createElement('img');
+                img.src = pasta + '/quadro' + num + '.png';
+                img.className = 'fio';
+                img.style.display = 'block';
+                container.appendChild(img);
             }, 120);
         }
     </script>

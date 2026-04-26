@@ -5,62 +5,82 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SMT - Simulador</title>
     <style>
-        body { margin: 0; background-color: #0b0e14; display: flex; flex-direction: column; align-items: center; font-family: sans-serif; color: #e0e0e0; }
-        #container-simulador { position: relative; width: 100%; max-width: 420px; margin-top: 15px; border: 2px solid #2c3e50; border-radius: 8px; overflow: hidden; background: #000; }
-        .camada { display: block; width: 100%; height: auto; }
-        .fio-frame { position: absolute; top: 0; left: 0; width: 100%; height: auto; pointer-events: none; }
-        .controles { margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; width: 100%; max-width: 420px; }
-        button { padding: 12px; background: #1c1c1c; color: #ffcc00; border: 1px solid #ffcc00; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 10px; text-transform: uppercase; }
-        button:active { background: #ffcc00; color: #000; }
-        .btn-reset { grid-column: span 2; background: #c0392b; color: white; border-color: #e74c3c; margin-top: 10px; }
+        body { margin: 0; background-color: #0b0e14; color: white; display: flex; flex-direction: column; align-items: center; font-family: sans-serif; }
+        #quadro { position: relative; width: 100%; max-width: 450px; margin-top: 10px; border: 2px solid #2c3e50; border-radius: 8px; overflow: hidden; background: #000; }
+        .fundo { width: 100%; display: block; }
+        .fio { position: absolute; top: 0; left: 0; width: 100%; height: auto; display: none; pointer-events: none; }
+        .painel { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 20px; width: 100%; max-width: 450px; }
+        button { padding: 15px; cursor: pointer; font-weight: bold; background: #1c1c1c; color: #ffcc00; border: 1px solid #ffcc00; border-radius: 6px; text-transform: uppercase; font-size: 10px; }
+        button:active { background: #ffcc00; color: #000; transform: scale(0.95); }
+        .reset { grid-column: span 2; background: #c0392b; color: #fff; border: 1px solid #e74c3c; margin-top: 5px; }
     </style>
 </head>
 <body>
 
     <h2 style="color: #ffcc00; margin-bottom: 5px;">Simulador SMT</h2>
 
-    <div id="container-simulador">
-        <img src="circuito.jpg" class="camada">
-        <div id="camadas-fios"></div>
+    <div id="quadro">
+        <img src="circuito.jpg" class="fundo">
+        <div id="camadas"></div>
     </div>
 
-    <div class="controles">
-        <button onclick="animar('FASE', 18, 6)">Ligar Fase 1</button>
-        <button onclick="animar('FASE2', 18, 6)">Ligar Fase 2</button>
-        
-        <button onclick="animar('FIO PT1', 12, 6)">Preto 1 (Neutro)</button>
-        <button onclick="animar('FIO PT2', 60, 6)">Preto 2 (Longo)</button>
-        
-        <button onclick="animar('FIO VM1', 12, 6)">Vermelho 1</button>
-        <button onclick="animar('FIO VM2', 60, 6)">Vermelho 2 (Longo)</button>
-        
-        <button class="btn-reset" onclick="location.reload()">Limpar Tudo</button>
+    <div class="painel">
+        <button onclick="play('FASE', 18)">Ligar Fase 1</button>
+        <button onclick="play('FASE2', 18)">Ligar Fase 2</button>
+        <button onclick="play('FIO PT1', 12)">Preto 1</button>
+        <button onclick="play('FIO PT2', 60)">Preto 2 (Longo)</button>
+        <button onclick="play('FIO VM1', 12)">Vermelho 1</button>
+        <button onclick="play('FIO VM2', 60)">Vermelho 2 (Longo)</button>
+        <button class="reset" onclick="location.reload()">LIMPAR TUDO</button>
     </div>
 
     <script>
-        function animar(pasta, ultimoFrame, salto) {
-            const container = document.getElementById('camadas-fios');
-            let frameAtual = 0;
+        function play(pasta, fim) {
+            const container = document.getElementById('camadas');
+            
+            // Definição dos frames para a pasta FASE (conforme sua correção)
+            const framesFase = [0, 5, 12, 18];
+            let i = 0;
 
-            // Caso a pasta FASE comece no 0006, ajustamos o início
-            if(pasta === 'FASE') frameAtual = 6;
+            let loop = setInterval(() => {
+                let frameAtual;
 
-            const intervalo = setInterval(() => {
-                if (frameAtual <= ultimoFrame) {
-                    let numFormatado = frameAtual.toString().padStart(4, '0');
-                    let imgPath = pasta + '/quadro' + numFormatado + '.png';
-
-                    const novaImg = document.createElement('img');
-                    novaImg.src = imgPath;
-                    novaImg.className = 'fio-frame';
-                    novaImg.style.display = 'block';
-                    
-                    container.appendChild(novaImg);
-                    frameAtual += salto;
+                if (pasta === 'FASE') {
+                    // Lógica Manual para FASE
+                    if (i < framesFase.length) {
+                        frameAtual = framesFase[i];
+                        i++;
+                    } else {
+                        clearInterval(loop);
+                        return;
+                    }
                 } else {
-                    clearInterval(intervalo);
+                    // Lógica Automática (pulo de 6 em 6) para as outras pastas
+                    frameAtual = i * 6;
+                    if (frameAtual <= fim) {
+                        i++;
+                    } else {
+                        clearInterval(loop);
+                        return;
+                    }
                 }
-            }, 100);
+
+                // Criação da imagem do frame
+                let id = 'img-' + pasta + '-' + frameAtual;
+                if (!document.getElementById(id)) {
+                    let img = document.createElement('img');
+                    img.id = id;
+                    // Formata para 4 dígitos: quadro0000, quadro0005, etc.
+                    let num = frameAtual.toString().padStart(4, '0');
+                    img.src = pasta + '/quadro' + num + '.png';
+                    img.className = 'fio';
+                    img.style.display = 'block';
+                    
+                    // Adiciona ao container (sobrepondo o fundo)
+                    container.appendChild(img);
+                }
+
+            }, 120); // Velocidade da animação (120ms)
         }
     </script>
 </body>
